@@ -105,6 +105,8 @@ public class AerospikeCacheManager implements CacheManager {
             template = buildAerospikeTemplate(defaultNamespace, name);
         }
         template.setExpiration(timeToLive);
+        //call init before passing template to cache. this sets the ttl as expected otherwise it remain 0, default value of an int.
+        template.init();
         final AerospikeCache cache = new AerospikeCache(template, serializer);
         caches.put(cache.getName(), cache);
         return cache;
