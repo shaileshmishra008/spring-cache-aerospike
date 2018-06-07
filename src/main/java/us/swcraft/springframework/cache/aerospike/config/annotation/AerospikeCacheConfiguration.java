@@ -20,14 +20,18 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.cache.CacheManager;
+import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportAware;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.core.env.Environment;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.util.ClassUtils;
 
@@ -50,8 +54,11 @@ import com.aerospike.client.async.IAsyncClient;
 @Configuration
 @SuppressWarnings("rawtypes")
 @ComponentScan("us.swcraft")
-public class AerospikeCacheConfiguration implements ImportAware, BeanClassLoaderAware {
+public class AerospikeCacheConfiguration implements ImportAware, BeanClassLoaderAware, EnvironmentAware {
 
+    private static final Logger _logger = LoggerFactory.getLogger(AerospikeCacheConfiguration.class);
+
+    private Environment env;
     private ClassLoader beanClassLoader;
 
     private Integer defaultTimeToLiveInSeconds = 1800;
@@ -121,9 +128,16 @@ public class AerospikeCacheConfiguration implements ImportAware, BeanClassLoader
                 enableAttrs = AnnotationAttributes.fromMap(enableAttrMap);
             }
         }
-        defaultTimeToLiveInSeconds = enableAttrs.getNumber("defaultTimeToLiveInSeconds");
-        defaultNamespace = enableAttrs.getString("defaultNamespace");
-        defaultCacheName = enableAttrs.getString("defaultCacheName");
+        Integer ttl = -5; // aerospike has following valid values for ttl: -1, 0, any other positive int.
+        String ttlVal = this.env.getProperty("aerospike.cache.defaultTimeToLiveInSeconds");
+        try {
+            if(ttlVal != null )ttl = Integer.parseInt(ttlVal);
+        }catch(NumberFormatException nfe){
+            _logger.warn("Could not convert value of aerospike.cache.defaultTimeToLiveInSeconds to Integer = {0}", ttlVal);
+        }
+        defaultTimeToLiveInSeconds =  ttl != -5 ? ttl :enableAttrs.getNumber("defaultTimeToLiveInSeconds");
+        defaultNamespace = this.env.getProperty("aerospike.cache.defaultNamespace") != null ? this.env.getProperty("aerospike.cache.defaultNamespace") : enableAttrs.getString("defaultNamespace");
+        defaultCacheName = this.env.getProperty("aerospike.cache.defaultCacheName") != null ? this.env.getProperty("aerospike.cache.defaultCacheName") : enableAttrs.getString("defaultCacheName");
         compression = enableAttrs.getEnum("compression");
         serializerClass = enableAttrs.getClass("serializerClass");
 
@@ -139,4 +153,8 @@ public class AerospikeCacheConfiguration implements ImportAware, BeanClassLoader
         this.beanClassLoader = classLoader;
     }
 
+    @Override
+    public void setEnvironment(Environment environment) {
+        this.env = environment;
+    }
 }
