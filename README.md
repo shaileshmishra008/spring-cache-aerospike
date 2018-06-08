@@ -1,5 +1,7 @@
 # !!! THIS IS A FORK FROM [vlad-aleksandrov/spring-cache-aerospike](https://github.com/vlad-aleksandrov/spring-cache-aerospike) !!!
-# it contains fix for ttl not being applied + enhancement to support default namespace, cache name and TTL from application.properties file
+1. Supports spring boot 2
+2. Fix for ttl not being applied
+3. Enhancement to support default namespace, cache name and TTL from application.properties file
 
 
 # About spring-cache-aerospike
