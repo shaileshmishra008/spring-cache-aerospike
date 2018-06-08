@@ -18,15 +18,11 @@ package us.swcraft.springframework.store.persistence;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.aerospike.client.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
-import com.aerospike.client.AerospikeException;
-import com.aerospike.client.Bin;
-import com.aerospike.client.Key;
-import com.aerospike.client.Record;
-import com.aerospike.client.ScanCallback;
 import com.aerospike.client.policy.CommitLevel;
 import com.aerospike.client.policy.Policy;
 import com.aerospike.client.policy.RecordExistsAction;
@@ -79,27 +75,27 @@ public class AerospikeTemplate extends AerospikeAccessor implements AerospikeOpe
 
         deletePolicy = new WritePolicy();
         deletePolicy.commitLevel = CommitLevel.COMMIT_MASTER;
-        deletePolicy.timeout = 2000;
+        deletePolicy.setTimeout(2000);
 
         writePolicyUpdate = new WritePolicy();
         writePolicyUpdate.expiration = expiration;
         writePolicyUpdate.recordExistsAction = RecordExistsAction.UPDATE;
         writePolicyUpdate.commitLevel = CommitLevel.COMMIT_ALL;
-        writePolicyUpdate.timeout = 2000;
+        writePolicyUpdate.setTimeout(2000);
 
         writePolicyCommitMaster = new WritePolicy();
         writePolicyCommitMaster.recordExistsAction = RecordExistsAction.UPDATE;
         writePolicyCommitMaster.commitLevel = CommitLevel.COMMIT_MASTER;
-        writePolicyCommitMaster.timeout = 2000;
+        writePolicyCommitMaster.setTimeout(2000);
 
         writePolicyCreateOnly = new WritePolicy();
         writePolicyCreateOnly.expiration = expiration;
         writePolicyCreateOnly.recordExistsAction = RecordExistsAction.CREATE_ONLY;
         writePolicyCreateOnly.commitLevel = CommitLevel.COMMIT_ALL;
-        writePolicyCreateOnly.timeout = 2000;
+        writePolicyCreateOnly.setTimeout(2000);
 
         readPolicy = new Policy();
-        readPolicy.timeout = 2000;
+        readPolicy.setTimeout(2000);
     }
 
     /**
@@ -172,6 +168,7 @@ public class AerospikeTemplate extends AerospikeAccessor implements AerospikeOpe
         Assert.notNull(key, "key can't be null");
         final Key recordKey = new Key(namespace, setname, key);
         return getAerospikeClient().get(readPolicy, recordKey);
+        //return getAerospikeClient().operate(writePolicyUpdate, recordKey, Operation.get(), Operation.touch());
     }
 
     /**
@@ -180,7 +177,7 @@ public class AerospikeTemplate extends AerospikeAccessor implements AerospikeOpe
     @Override
     public void createIndex(final String binName, final String indexName, final IndexType indexType) {
         Policy policy = new Policy();
-        policy.timeout = 0; // Do not timeout on index create.
+        policy.setTimeout(0); // Do not timeout on index create.
 
         IndexTask task = getAerospikeClient().createIndex(policy, namespace, setname, indexName, binName, indexType);
         task.waitTillComplete();
