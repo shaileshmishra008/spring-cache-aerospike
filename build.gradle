@@ -1,3 +1,5 @@
+apply plugin: 'maven'
+
 description = 'Spring Cache Aerospike'
 
 apply from:   "${rootProject.projectDir}/gradle/java.gradle"
@@ -57,4 +59,23 @@ task wrapper(type: Wrapper) {
 	description = 'Generates gradlew[.bat] scripts'
 	gradleVersion = '2.3'
 	distributionUrl = "http://services.gradle.org/distributions/gradle-${gradleVersion}-all.zip"
+}
+
+task createPom {
+    pom {
+        project {
+            groupId 'us.swcraft.springframework'
+            artifactId 'spring-cache-aerospike'
+            version '1.0.0'
+
+            inceptionYear '2018'
+            licenses {
+                license {
+                    name 'The Apache Software License, Version 2.0'
+                    url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    distribution 'repo'
+                }
+            }
+        }
+    }.writeTo("pom.xml")
 }
