@@ -62,6 +62,7 @@ public class AerospikeTemplate extends AerospikeAccessor implements AerospikeOpe
     private String setname;
 
     private int expiration;
+    private boolean touchOnFetch;
 
     private WritePolicy deletePolicy;
     private WritePolicy writePolicyUpdate;
@@ -84,6 +85,7 @@ public class AerospikeTemplate extends AerospikeAccessor implements AerospikeOpe
         writePolicyUpdate.setTimeout(2000);
 
         writePolicyCommitMaster = new WritePolicy();
+        writePolicyCommitMaster.expiration = expiration;
         writePolicyCommitMaster.recordExistsAction = RecordExistsAction.UPDATE;
         writePolicyCommitMaster.commitLevel = CommitLevel.COMMIT_MASTER;
         writePolicyCommitMaster.setTimeout(2000);
@@ -223,9 +225,11 @@ public class AerospikeTemplate extends AerospikeAccessor implements AerospikeOpe
 
     @Override
     public void touch(final String key) {
-        Assert.notNull(key, "key can't be null");
-        final Key recordKey = new Key(namespace, setname, key);
-        getAsyncAerospikeClient().touch(writePolicyCommitMaster, recordKey);
+    	if(getTouchOnFetch()) {
+	        Assert.notNull(key, "key can't be null");
+	        final Key recordKey = new Key(namespace, setname, key);
+	        getAsyncAerospikeClient().touch(writePolicyCommitMaster, recordKey);
+    	}
     }
 
     public void setNamespace(final String namespace) {
@@ -252,4 +256,11 @@ public class AerospikeTemplate extends AerospikeAccessor implements AerospikeOpe
         return expiration;
     }
 
+    public void setTouchOnFetch(final boolean touchOnFetch) {
+    	this.touchOnFetch = touchOnFetch;
+    }
+    
+    public boolean getTouchOnFetch() {
+    	return touchOnFetch;
+    } 
 }
