@@ -90,7 +90,8 @@ public class AerospikeCacheConfiguration implements ImportAware, BeanClassLoader
         for (AnnotationAttributes cacheConfigAttrs : cachesConfiguration) {
             final String name = cacheConfigAttrs.getString("name");
             final int timeToLiveInSeconds = cacheConfigAttrs.getNumber("timeToLiveInSeconds");
-            aerospikeCacheManager.createCache(name, timeToLiveInSeconds);
+            final boolean touchOnFetch = cacheConfigAttrs.getBoolean("touchOnFetch");
+            aerospikeCacheManager.createCache(name, timeToLiveInSeconds, touchOnFetch);
         }
         return aerospikeCacheManager;
     }
@@ -135,7 +136,7 @@ public class AerospikeCacheConfiguration implements ImportAware, BeanClassLoader
         }catch(NumberFormatException nfe){
             _logger.warn("Could not convert value of aerospike.cache.defaultTimeToLiveInSeconds to Integer = {0}", ttlVal);
         }
-        defaultTimeToLiveInSeconds =  ttl != -5 ? ttl :enableAttrs.getNumber("defaultTimeToLiveInSeconds");
+        defaultTimeToLiveInSeconds =  (Integer) (ttl != -5 ? ttl :enableAttrs.getNumber("defaultTimeToLiveInSeconds"));
         defaultNamespace = this.env.getProperty("aerospike.cache.defaultNamespace") != null ? this.env.getProperty("aerospike.cache.defaultNamespace") : enableAttrs.getString("defaultNamespace");
         defaultCacheName = this.env.getProperty("aerospike.cache.defaultCacheName") != null ? this.env.getProperty("aerospike.cache.defaultCacheName") : enableAttrs.getString("defaultCacheName");
         compression = enableAttrs.getEnum("compression");

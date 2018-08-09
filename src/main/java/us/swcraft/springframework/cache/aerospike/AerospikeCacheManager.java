@@ -94,6 +94,10 @@ public class AerospikeCacheManager implements CacheManager {
     }
 
     public AerospikeCache createCache(final String name, int timeToLive) {
+        return createCache(name, timeToLive, true);
+    }
+    
+    public AerospikeCache createCache(final String name, int timeToLive, boolean touchOnFetch) {
         Assert.hasText(name, "Cache name can't be empty");
         AerospikeTemplate template = null;
 
@@ -105,12 +109,12 @@ public class AerospikeCacheManager implements CacheManager {
             template = buildAerospikeTemplate(defaultNamespace, name);
         }
         template.setExpiration(timeToLive);
+        template.setTouchOnFetch(touchOnFetch);
         //call init before passing template to cache. this sets the ttl as expected otherwise it remain 0, default value of an int.
         template.init();
         final AerospikeCache cache = new AerospikeCache(template, serializer);
         caches.put(cache.getName(), cache);
         return cache;
-
     }
 
     private AerospikeTemplate buildAerospikeTemplate(final String namespace, final String setname) {

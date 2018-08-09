@@ -30,6 +30,7 @@ import java.lang.annotation.Target;
 public @interface AerospikeCacheConfig {
 
     int timeToLiveInSeconds() default 1800;
+    boolean touchOnFetch() default true;
 
     String name();
 
