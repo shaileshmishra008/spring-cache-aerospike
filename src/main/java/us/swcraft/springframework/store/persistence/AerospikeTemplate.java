@@ -59,7 +59,7 @@ public class AerospikeTemplate extends AerospikeAccessor implements AerospikeOpe
     /**
      * Aerospike set name.
      */
-    private String setname;
+    private String setname;	
 
     private int expiration;
     private boolean touchOnFetch;
@@ -107,13 +107,8 @@ public class AerospikeTemplate extends AerospikeAccessor implements AerospikeOpe
     public boolean hasKey(final String key) {
         log.trace("has {} key?", key);
         Assert.notNull(key, "key can't be null");
-        final Key recordKey = new Key(namespace, setname, key);
-        try {
-        	return getAerospikeClient().exists(readPolicy, recordKey);
-        }catch (AerospikeException e) {
-        	log.warn("AerospikeException : " + e.getLocalizedMessage());
-			return false;
-		}
+        final Key recordKey = new Key(namespace, setname, key);      
+        return getAerospikeClient().exists(readPolicy, recordKey);       
     }
 
     @Override
@@ -121,11 +116,7 @@ public class AerospikeTemplate extends AerospikeAccessor implements AerospikeOpe
         log.trace("delete {} key", key);
         Assert.notNull(key, "key can't be null");
         final Key recordKey = new Key(namespace, setname, key);
-        try {
-        	getAsyncAerospikeClient().delete(deletePolicy, recordKey);
-        }catch (AerospikeException e) {
-        	log.warn("AerospikeException : " + e.getLocalizedMessage());
-		}
+        getAsyncAerospikeClient().delete(deletePolicy, recordKey);        
     }
 
     @Override
@@ -135,11 +126,7 @@ public class AerospikeTemplate extends AerospikeAccessor implements AerospikeOpe
         final Key recordKey = new Key(namespace, setname, key);
         Assert.notNull(binName, "bin name can't be null");
         final Bin bin = Bin.asNull(binName);
-        try {
-        	getAsyncAerospikeClient().put(deletePolicy, recordKey, bin);
-        }catch (AerospikeException e) {
-        	log.warn("AerospikeException : " + e.getLocalizedMessage());
-		}
+        getAsyncAerospikeClient().put(deletePolicy, recordKey, bin);        
     }
 
     @Override
@@ -148,12 +135,7 @@ public class AerospikeTemplate extends AerospikeAccessor implements AerospikeOpe
         Assert.notNull(key, "key can't be null");
         final Key recordKey = new Key(namespace, setname, key);
         Assert.notNull(bin, "bin can't be null");
-        try {
-        	getAerospikeClient().put(writePolicyUpdate, recordKey, bin);
-        }
-        catch (AerospikeException e) {
-        	log.warn("AerospikeException : " + e.getLocalizedMessage());
-		}
+        getAerospikeClient().put(writePolicyUpdate, recordKey, bin);        
     }
 
     @Override
@@ -162,11 +144,7 @@ public class AerospikeTemplate extends AerospikeAccessor implements AerospikeOpe
         Assert.notNull(key, "key can't be null");
         final Key recordKey = new Key(namespace, setname, key);
         Assert.notNull(bin, "bin can't be null");
-        try{
-        	getAerospikeClient().put(writePolicyCreateOnly, recordKey, bin);
-        }catch (AerospikeException e) {
-        	log.warn("AerospikeException : " + e.getLocalizedMessage());
-		}
+        getAerospikeClient().put(writePolicyCreateOnly, recordKey, bin);
     }
 
     @Override
@@ -175,11 +153,7 @@ public class AerospikeTemplate extends AerospikeAccessor implements AerospikeOpe
         final Key recordKey = new Key(namespace, setname, key);
         Assert.notNull(bins, "bins can't be null");
         Assert.notEmpty(bins, "bins should have data to store");     
-        try {
-        	getAerospikeClient().put(writePolicyUpdate, recordKey, bins.toArray(BIN_ARRAY_TYPE));
-        }catch (AerospikeException e) {
-        	log.warn("AerospikeException : " + e.getLocalizedMessage());
-		}
+        getAerospikeClient().put(writePolicyUpdate, recordKey, bins.toArray(BIN_ARRAY_TYPE));        
     }
 
     @Override
@@ -188,24 +162,14 @@ public class AerospikeTemplate extends AerospikeAccessor implements AerospikeOpe
         final Key recordKey = new Key(namespace, setname, key);
         Assert.notNull(bins, "bins can't be null");
         Assert.notEmpty(bins, "bins should have data to store");
-        try{
-        	getAerospikeClient().put(writePolicyCreateOnly, recordKey, bins.toArray(BIN_ARRAY_TYPE));
-        }catch (AerospikeException e) {
-        	log.warn("AerospikeException : " + e.getLocalizedMessage());
-		}
+        getAerospikeClient().put(writePolicyCreateOnly, recordKey, bins.toArray(BIN_ARRAY_TYPE));
     }
 
     @Override
     public Record fetch(final String key) {
         Assert.notNull(key, "key can't be null");
         final Key recordKey = new Key(namespace, setname, key);
-        try {
-        	return getAerospikeClient().get(readPolicy, recordKey);
-        }
-        catch(AerospikeException e) {
-        	log.warn("AerospikeException : " + e.getLocalizedMessage());
-        	return null;
-        }
+        return getAerospikeClient().get(readPolicy, recordKey);
         //return getAerospikeClient().operate(writePolicyUpdate, recordKey, Operation.get(), Operation.touch());
     }
 
@@ -216,13 +180,8 @@ public class AerospikeTemplate extends AerospikeAccessor implements AerospikeOpe
     public void createIndex(final String binName, final String indexName, final IndexType indexType) {
         Policy policy = new Policy();
         policy.setTimeout(0); // Do not timeout on index create.
-        
-        try{
-        	IndexTask task = getAerospikeClient().createIndex(policy, namespace, setname, indexName, binName, indexType);       
-        	task.waitTillComplete();
-        }catch (AerospikeException e) {
-        	log.warn("AerospikeException : " + e.getLocalizedMessage());
-		}
+    	IndexTask task = getAerospikeClient().createIndex(policy, namespace, setname, indexName, binName, indexType);       
+    	task.waitTillComplete();
     }
 
     /**
@@ -249,9 +208,6 @@ public class AerospikeTemplate extends AerospikeAccessor implements AerospikeOpe
                 }
             }
         } 
-        catch (AerospikeException e) {
-        	log.warn("AerospikeException : " + e.getLocalizedMessage());
-		}
         finally {
             rs.close();
         }
@@ -260,15 +216,11 @@ public class AerospikeTemplate extends AerospikeAccessor implements AerospikeOpe
 
     @Override
     public void deleteAll() {
-        try {
-			getAerospikeClient().scanAll(new ScanPolicy(), namespace, setname, new ScanCallback() {
-		        public void scanCallback(Key key, Record record) throws AerospikeException {
-		            getAsyncAerospikeClient().delete(writePolicyCommitMaster, key);
-		        }
-		    }, new String[] {});
-        }catch (AerospikeException e) {
-        	log.warn("AerospikeException : " + e.getLocalizedMessage());
-		}
+		getAerospikeClient().scanAll(new ScanPolicy(), namespace, setname, new ScanCallback() {
+	        public void scanCallback(Key key, Record record) throws AerospikeException {
+	            getAsyncAerospikeClient().delete(writePolicyCommitMaster, key);
+	        }
+	    }, new String[] {});
     }
 
     @Override
@@ -276,12 +228,7 @@ public class AerospikeTemplate extends AerospikeAccessor implements AerospikeOpe
     	if(getTouchOnFetch()) {
 	        Assert.notNull(key, "key can't be null");
 	        final Key recordKey = new Key(namespace, setname, key);
-	        try{
-	        	getAsyncAerospikeClient().touch(writePolicyCommitMaster, recordKey);
-	        }
-	        catch (AerospikeException e) {
-	        	log.warn("AerospikeException : " + e.getLocalizedMessage());
-			}
+        	getAsyncAerospikeClient().touch(writePolicyCommitMaster, recordKey);
     	}
     }
 
